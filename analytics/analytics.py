@@ -6,9 +6,9 @@ class SalesAnalytics:
     def revenue_by_category(start_date, end_date):
         return (
             OrderItem.objects
-            .filter(order__order_date__range=(start_date, end_date))  # Filter orders by date range
-            .values('product__category__name')  # Group by category name
-            .annotate(total=Sum(F('quantity') * F('price_at_time_of_order')))  # Calculate total revenue
+            .filter(order__order_date__range=(start_date, end_date))
+            .values('product__category__name')
+            .annotate(total=Sum(F('quantity') * F('price_at_time_of_order'))) 
         )
 
 

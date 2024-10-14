@@ -158,7 +158,7 @@ class ViewTests(TestCase):
 
     def test_customer_lifetime_value(self):
         self.set_authentication() 
-        response = self.client.get(reverse('customer_lifetime_value', args=[self.customer_john.id]))  # Use self.customer_john
+        response = self.client.get(reverse('customer_lifetime_value', args=[self.customer_john.id])) 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         response_data = json.loads(response.content)

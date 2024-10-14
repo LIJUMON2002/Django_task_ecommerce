@@ -36,10 +36,6 @@ class ModelTests(TestCase):
         popular_products = Product.objects.popular()
         self.assertEqual(popular_products.first(), self.product)
 
-    def test_inventory_restock_alert(self):
-        self.inventory.quantity = 3  
-        self.inventory.save()
-        self.assertEqual(self.inventory.quantity, 3)
 
     def test_calculate_lifetime_value(self):
         new_customer = Customer.objects.create(name='Jane Doe', email='jane.doe@example.com', country='US')
@@ -53,10 +49,15 @@ class ModelTests(TestCase):
         expected_tax = self.order.calculate_tax()  
         self.assertAlmostEqual(expected_tax, 70.00, places=2)
 
+    def test_inventory_restock_alert(self):
+        self.inventory.quantity = 3  
+        self.inventory.save()
+        self.assertEqual(self.inventory.quantity, 3)
+
     def test_order_item_inventory_update(self):
         initial_quantity = self.inventory.quantity
         order_item = OrderItem.objects.create(order=self.order, product=self.product, quantity=2, price_at_time_of_order=self.product.price)
-        self.product.refresh_from_db()  # Refresh to get the latest state
+        self.product.refresh_from_db()
         self.assertEqual(self.inventory.quantity, initial_quantity - order_item.quantity)
 
     from unittest.mock import patch
