@@ -4,7 +4,7 @@
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/LIJUMON2002/Django_task_ecommerce.git
    cd e_commerce_analytics
    ```
 
@@ -35,25 +35,13 @@
    python manage.py runserver
    ```
 
-7. Access the API at `http://localhost:8000/api/`
+7. Access the API at `http://localhost:8000/`
 
 
 ## API Endpoints
 
-Product: /products/
-Customer: /customers/
-Order: /orders/
-OrderItem: /order-items/
-Inventory: /inventories/
-Sales: 
-    /sales/churn_rate/{period}/
-    /sales/revenue_by_category/{start_date}/{end_date}/
-    /sales/top_selling_products/{country}/{start_date}/{end_date}/
-Recommend Products: 
-    /recommend_products/history/{customer_id}/
-    /recommend_products/inventory/
-    /recommend_products/similar/{customer_id}/
-    /recommend_products/{customer_id}/
+1. SWAGGER: http://localhost:8000/swagger/
+2. REDOC: http://localhost:8000/redoc/
 
 ## Key Design Decisions
 
