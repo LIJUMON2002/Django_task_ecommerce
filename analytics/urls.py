@@ -16,16 +16,13 @@ router.register(r'inventories', InventoryViewSet)
 urlpatterns = [
     path('', include(router.urls)),
 
- 
-    # finding top products based on orderitem quantity
-    path('top-products/', PopularProductsView.as_view(), name='popular_products'),
-
     # lifetime value
     path('customers/lifetime_value/<int:pk>/', CustomerLifetimeValueView.as_view(), name='customer_lifetime_value'),
 
+    # finding top products based on orderitem quantity
+    path('sales/top-products/', PopularProductsView.as_view(), name='popular_products'),
     # URL to generate SALES REPORT with month and year specified
-    path('sales-report/', MonthlySalesReportView.as_view(), name='monthly_sales_report'),
-    
+    path('sales/report/', MonthlySalesReportView.as_view(), name='monthly_sales_report'),
     # Sales Analytics
     path('sales/revenue_by_category/', RevenueByCategoryView.as_view(), name='revenue_by_category'),
     path('sales/top_selling_products/', TopSellingProductsByCountryView.as_view(), name='top_selling_products'),
@@ -35,7 +32,6 @@ urlpatterns = [
     path('recommend_products/<int:customer_id>/', RecommendProducts.as_view(), name='recommend_products'),
     # if no type specified it will return the recommendation based on history, similar customers and inventory
     # here types can be "based on history", "based on similar customers", "based on inventory"
-
 
     #User registration, access token and refresh token generation 
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
