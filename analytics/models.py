@@ -10,6 +10,7 @@ class Category(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 class ProductManager(models.Manager):
+    #finding top products by checking orderitem quantity
     def popular(self):
         return self.annotate(total_sales=Sum('orderitem__quantity')).order_by('-total_sales')
 
@@ -33,6 +34,7 @@ class Customer(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    # Calculate lifetime value by adding total-amount of all orders
     def calculate_lifetime_value(self):
         orders = self.order_set.all()
         return sum(order.total_amount for order in orders)
@@ -50,6 +52,7 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    #calculate tax according to tax-rate
     def calculate_tax(self):
         tax_rates = {
             'US': 0.07,
@@ -65,6 +68,8 @@ class OrderItem(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+
+# Signal for OrderItem table, updating the Inventory Table
 @receiver(post_save, sender=OrderItem)
 def update_inventory(sender, instance, created, **kwargs):
     if created:
@@ -84,6 +89,7 @@ class Inventory(models.Model):
             self.trigger_restock_alert()
         super().save(*args, **kwargs)
 
+    # Print alert when quantity become lessthan 5
     def trigger_restock_alert(self):
         print(f"Restock alert: {self.product.name} is low on stock!")
 

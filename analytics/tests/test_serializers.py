@@ -21,7 +21,6 @@ class SerializerTests(TestCase):
             category=self.category
         )
 
-        # Use get_or_create to avoid duplicate entry errors
         self.inventory, created = Inventory.objects.get_or_create(
             product=self.product,
             defaults={'quantity': 10}
@@ -85,7 +84,6 @@ class SerializerTests(TestCase):
         self.assertEqual(serializer.data['category'], self.category.id)  # Assuming you want to return category ID
 
     def test_inventory_serializer(self):
-        # Ensure inventory is only created once and test the serializer here
         inventory_data = InventorySerializer(instance=self.inventory).data
         self.assertEqual(inventory_data['product'], self.product.id)
         self.assertEqual(inventory_data['quantity'], 10)

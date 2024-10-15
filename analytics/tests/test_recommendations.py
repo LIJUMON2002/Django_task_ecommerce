@@ -41,4 +41,4 @@ class RecommendationEngineTests(TestCase):
 
     def test_recommend_products_based_on_inventory(self):
         recommendations = RecommendationEngine.recommend_products_based_on_inventory()
-        self.assertIn(self.product1, recommendations)  # Should recommend Book 1
+        self.assertIn(self.product1, recommendations)

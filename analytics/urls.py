@@ -1,11 +1,12 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from .views import CustomerChurnRateView, CustomerLifetimeValueView, OrderItemViewSet, PopularProductsView, ProductViewSet, CustomerViewSet, OrderViewSet, InventoryViewSet, RecommendProductsBasedOnHistoryView, RecommendProductsBasedOnInventoryView, RecommendProductsBasedOnSimilarCustomersView, RecommendProductsView, RevenueByCategoryView, TopSellingProductsByCountryView
-from .views import UserRegistrationView
-from .views import MonthlySalesReportView
+from .views import OrderItemViewSet, PopularProductsView, ProductViewSet, CustomerViewSet, OrderViewSet, InventoryViewSet, RecommendProducts, RevenueByCategoryView, TopSellingProductsByCountryView
+from .views import UserRegistrationView, MonthlySalesReportView, CustomerChurnRateView, CustomerLifetimeValueView
 
 router = DefaultRouter()
+
+# Models CRUD operation urls
 router.register(r'products', ProductViewSet)
 router.register(r'customers', CustomerViewSet)
 router.register(r'orders', OrderViewSet)
@@ -15,21 +16,30 @@ router.register(r'inventories', InventoryViewSet)
 urlpatterns = [
     path('', include(router.urls)),
 
+ 
+    # finding top products based on orderitem quantity
+    path('top-products/', PopularProductsView.as_view(), name='popular_products'),
+
+    # lifetime value
+    path('customers/lifetime_value/<int:pk>/', CustomerLifetimeValueView.as_view(), name='customer_lifetime_value'),
+
+    # URL to generate SALES REPORT with month and year specified
+    path('sales-report/', MonthlySalesReportView.as_view(), name='monthly_sales_report'),
+    
+    # Sales Analytics
+    path('sales/revenue_by_category/', RevenueByCategoryView.as_view(), name='revenue_by_category'),
+    path('sales/top_selling_products/', TopSellingProductsByCountryView.as_view(), name='top_selling_products'),
+    path('sales/churn_rate/', CustomerChurnRateView.as_view(), name='customer_churn_rate'),
+    
+    #Recommendations
+    path('recommend_products/<int:customer_id>/', RecommendProducts.as_view(), name='recommend_products'),
+    # if no type specified it will return the recommendation based on history, similar customers and inventory
+    # here types can be "based on history", "based on similar customers", "based on inventory"
+
+
+    #User registration, access token and refresh token generation 
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('register/', UserRegistrationView.as_view(), name='user-register'),
 
-    path('reports/monthly_sales/<int:month>/<int:year>/', MonthlySalesReportView.as_view(), name='monthly_sales_report'),
-
-    path('top-products/', PopularProductsView.as_view(), name='popular_products'),
-    path('customers/<int:pk>/lifetime_value/', CustomerLifetimeValueView.as_view(), name='customer_lifetime_value'),
-
-    path('sales/revenue_by_category/<str:start_date>/<str:end_date>/', RevenueByCategoryView.as_view(), name='revenue_by_category'),
-    path('sales/top_selling_products/<str:country>/<str:start_date>/<str:end_date>/', TopSellingProductsByCountryView.as_view(), name='top_selling_products'),
-    path('sales/churn_rate/<str:period>/', CustomerChurnRateView.as_view(), name='customer_churn_rate'),
-    
-    path('recommend_products/<int:customer_id>/', RecommendProductsView.as_view(), name='recommend_products'),
-    path('recommend_products/history/<int:customer_id>/', RecommendProductsBasedOnHistoryView.as_view(), name='recommend_products_based_on_history'),
-    path('recommend_products/similar/<int:customer_id>/', RecommendProductsBasedOnSimilarCustomersView.as_view(), name='recommend_products_based_on_similar_customers'),
-    path('recommend_products/inventory/', RecommendProductsBasedOnInventoryView.as_view(), name='recommend_based_on_inventory'),   
 ]

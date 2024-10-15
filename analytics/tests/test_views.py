@@ -227,17 +227,29 @@ class ViewTests(TestCase):
 
     # Report generation view
     def test_monthly_sales_report(self):
-        response = self.client.get(reverse('monthly_sales_report', args=[10, 2024]))
+        self.set_authentication() 
+        url = reverse('monthly_sales_report')
+        response = self.client.get(url, {'month': 10, 'year': 2024})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('Content-Disposition', response.headers)
     
+    def test_monthly_sales_report_missing_params(self):
+        self.set_authentication() 
+        url = reverse('monthly_sales_report')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     # sales analytics views
     def test_revenue_by_category(self):
         self.set_authentication()
-        response = self.client.get(reverse('revenue_by_category', args=['2023-01-01', '2023-12-31']))
+        response = self.client.get(reverse('revenue_by_category'), {'start_date': '2024-10-10', 'end_date':'2024-10-13'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIsInstance(response.data, QuerySet) 
+
+    def test_revenue_by_category_missing_params(self):
+        self.set_authentication() 
+        response = self.client.get(reverse('revenue_by_category'))
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     
     def test_top_selling_products_by_country(self):
@@ -246,29 +258,34 @@ class ViewTests(TestCase):
         OrderItem.objects.create(order=self.order_john, product=self.product_laptop, quantity=5, price_at_time_of_order=self.product_laptop.price)
         OrderItem.objects.create(order=self.order_jane, product=self.product_shirt, quantity=3, price_at_time_of_order=self.product_shirt.price)
 
-        response = self.client.get(reverse('top_selling_products', args=['US', '2023-01-01', '2024-12-31']))
+        response = self.client.get(reverse('top_selling_products'), {'country':'US', 'start_date':'2023-01-01', 'end_date':'2024-12-31'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         product_names = [product['name'] for product in response.data]
         self.assertIn('Laptop', product_names)
 
+    def test_top_selling_products_by_country_missing_params(self):
+        self.set_authentication()
+
+        OrderItem.objects.create(order=self.order_john, product=self.product_laptop, quantity=5, price_at_time_of_order=self.product_laptop.price)
+        OrderItem.objects.create(order=self.order_jane, product=self.product_shirt, quantity=3, price_at_time_of_order=self.product_shirt.price)
+
+        response = self.client.get(reverse('top_selling_products'))
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_customer_churn_rate(self):
         self.set_authentication()
-        period = '2024-09-01'
-
         Customer.objects.create(name='Churned Customer1', email='churned1@example.com', country='US')
         Order.objects.create(customer=self.customer_jane,order_date='2023-10-01',status='C',total_amount=50.00)
         Customer.objects.create(name='Churned Customer2', email='churned2@example.com', country='UK')
         Order.objects.create(customer=self.customer_jane,order_date='2023-10-01',status='C',total_amount=50.00)
 
-        response = self.client.get(reverse('customer_churn_rate', args=[period]))
+        response = self.client.get(reverse('customer_churn_rate'),{'period':'2024-09-01'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         response_data = response.json()
         self.assertIn('churn_rate', response_data)
         expected_churn_rate = 16.666666666666664 
         self.assertAlmostEqual(response_data['churn_rate'], expected_churn_rate, delta=0.1)
-
-
 
     #recommendation views
 
@@ -290,7 +307,7 @@ class ViewTests(TestCase):
             price_at_time_of_order=self.product_laptop.price
         )
 
-        response = self.client.get(reverse('recommend_products_based_on_history', args=[self.customer_john.id]))
+        response = self.client.get(reverse('recommend_products', args=[self.customer_john.id]), {'type':'based on history'})
         self.assertEqual(response.status_code, status.HTTP_200_OK) 
         self.assertIn('id', response.data[0]) 
         self.assertIn('name', response.data[0]) 
@@ -306,20 +323,25 @@ class ViewTests(TestCase):
             price_at_time_of_order=self.product_laptop.price
         )
         
-        response = self.client.get(reverse('recommend_products_based_on_similar_customers', args=[self.customer_john.id]))
+        response = self.client.get(reverse('recommend_products', args=[self.customer_john.id]), {'type':'based on similar customer'})
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        
-        if response.data:
-            self.assertIn('id', response.data[0])
-            self.assertIn('name', response.data[0])
 
 
     def test_recommend_products_based_on_inventory(self):
         self.set_authentication()
-        response = self.client.get(reverse('recommend_based_on_inventory'))
-        print(response.data)
+        response = self.client.get(reverse('recommend_products', args=[self.customer_john.id]), {'type':'based on inventory'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('id', response.data[0])
         self.assertIn('name', response.data[0])
+
+    def test_recommend_products_with_missing_id(self):
+        self.set_authentication()
+        response = self.client.get(reverse('recommend_products', args=[100000]))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_recommend_products_with_invalid_type(self):
+        self.set_authentication()
+        response = self.client.get(reverse('recommend_products', args=[self.customer_john.id]), {'type':'based on'})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
